@@ -1,3 +1,6 @@
+from testCases import test_cases
+
+import unittest
 import numpy as np
 
 # Refactoring of the used methods to be more suitable for the test cases
@@ -36,4 +39,31 @@ class markov_sysrel:
             self.add_transition(transition[0], transition[1], transition[2], t_matrix)
         self.add_stall(self.__nStates, t_matrix)
         probs = self.get_probs(t_matrix, self.__nStates)
-        return self.get_status(probs, self.__okStates)  
+        return self.get_status(probs, self.__okStates)
+
+# Testing the test cases
+class Test(unittest.TestCase):
+    
+    def test_probability(self):        
+        for testName, test in test_cases.items():
+            with self.subTest(testName):
+                expected = test["expected"]
+                message = test["message"]
+                testMarkov = markov_sysrel(test["input"]["n_states"], test["input"]["ok_states"], test["input"]["transitions"])
+                actual = testMarkov.get_probability()
+                
+                if type(expected) is bool:
+                    # for Invalid inputs the program should be expected to return a False value instead of computing a wrong probability 
+                    self.assertEquals(
+                                      actual, 
+                                      expected, 
+                                      testName+" - "+message+ ': expected value {0} actual value {1}'.format(expected, actual)
+                                      )
+                elif type(expected) is list:
+                    self.assertTrue( 
+                                     not(actual is bool) and actual>= expected[0] and actual <= expected[1], 
+                                     testName+" - "+message+ ': expected value {0} actual value {1}'.format(expected, actual)
+                                     )
+                        
+if __name__ == "__main__":
+    unittest.main()
